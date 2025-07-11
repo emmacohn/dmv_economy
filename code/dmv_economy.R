@@ -146,4 +146,4 @@ tipped_acs$add_worksheet(sheet = "teen_share") $
   add_data(x = tipped_teen)
 
 # Save Excel
-wb_save(tipped_acs, "./output/real_annual_wages.xlsx")
+wb_save(tipped_acs, "./output/tipped_workers_acs.xlsx")
