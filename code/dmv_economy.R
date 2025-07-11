@@ -5,6 +5,8 @@ library(skimr)
 library(labelled)
 library(realtalk)
 library(openxlsx2)
+library(here)
+library(ipumsr)
 
 
 acs_2023_5yr_vars <-c('MET2013', 'PERWT', 'SEX', 'AGE', 'RACE', 'HISPAN', 'CITIZEN', 
@@ -23,11 +25,11 @@ acs2023_5yr <- define_extract_micro(
   wait_for_extract()
 
 dl_acs2023_5yr <- download_extract(extract = acs2023_5yr,
-                               download_dir = "./data",
+                               download_dir = here("/data"),
                                overwrite = TRUE)
 
 acs2023_5yr_final <- read_ipums_micro(dl_acs2023_5yr) %>%
-  filter(AGE>=16,CLASSWKRD %in% c(22,23,25,27,28)) %>%
+  filter(MET2013 == 47900, EMPSTAT == 1) %>%
   mutate(
     pop=1,
     wbhao = case_when(
@@ -49,19 +51,14 @@ acs2023_5yr_final <- read_ipums_micro(dl_acs2023_5yr) %>%
     ),
     us_citizen = labelled(us_citizen,c(
       "US citizen" = 1,
-      "Non US citizen" = 0)),
-    construct = case_when(
-      IND==770 ~1,
-      TRUE ~0)
+      "Non US citizen" = 0))
   )
 
-tipped_workers <- acs %>%
+tipped_workers <- acs2023_5yr_final %>%
   mutate(
     tipc = case_when(
-      emp == 1 ~ 0L,  # Initialize tipc = 0 if emp == 1
-      occ18 %in% c(4120, 4130) & ind17 %in% c(8580, 8590, 8660, 8670, 8680, 8690, 8970, 8980, 8990, 9090) ~ 1L,
-      occ18 %in% c(4040, 4060, 4110, 4400, 4500, 4510, 4520) ~ 1L,  # pre occ18
-      occ18 %in% c(4040, 4110, 4400, 4500, 4510, 4521, 4522, 4525) ~ 1L,  # with occ18
-      TRUE ~ NA_integer_  # Default to missing (equivalent to . in Stata)
+      OCC %in% c(4120, 4130) & IND %in% c(8580, 8590, 8660, 8670, 8680, 8690, 8970, 8980, 8990, 9090) ~ 1,
+      OCC %in% c(4040, 4110, 4400, 4500, 4510, 4521, 4522, 4525) ~ 1,
+      TRUE ~ 0
     )
   )
