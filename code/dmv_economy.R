@@ -143,11 +143,12 @@ tipped_acs$add_worksheet(sheet = "median_earnings") $
 
 # Age group (teenagers vs not teenagers)
 tipped_teen <- tipped_workers |>
-  filter(tipc == 1) |>
+  #filter(tipc == 1) |>
   mutate(teenager = if_else(age <= 19, 1, 0)) |>
   summarize(total_emp = sum(empstat * perwt, na.rm=TRUE),
             total_teen = sum(teenager * perwt, na.rm=TRUE),
-            n=n()) |>
+            n=n(),
+            .by = tipc) |>
   mutate(teen_share = total_teen/total_emp)
 
 tipped_acs$add_worksheet(sheet = "teen_share") $
