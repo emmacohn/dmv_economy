@@ -11,7 +11,7 @@ library(epidatatools)
 
 # Download ACS data
 
-acs_2023_5yr_vars <-c('MET2013', 'PERWT', 'SEX', 'AGE', 'RACE', 'HISPAN', 'CITIZEN', 
+acs_2023_5yr_vars <-c('MET2013', 'PERWT', 'SEX', 'AGE', 'RACE', 'HISPAN', 'CITIZEN', 'CLASSWKR',
                       'EMPSTAT', 'LABFORCE', 'OCC', 'IND', 'POVERTY', 'INCWAGE', 'PWSTATE2')
   
 #acs_samps <- ipumsr::get_sample_info('usa')
@@ -33,7 +33,7 @@ dl_acs2023_5yr <- download_extract(extract = acs2023_5yr,
 # CLean ACS data for employed DMV workers
 
 acs2023_5yr_final <- read_ipums_micro(dl_acs2023_5yr) |>
-  filter(PWSTATE2 == 11, EMPSTAT == 1) |>
+  filter(PWSTATE2 == 11, EMPSTAT == 1, CLASSWKR == 2) |>
   janitor::clean_names() |>
   mutate(
     pop=1,
