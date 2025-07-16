@@ -11,7 +11,7 @@ library(epidatatools)
 # Import CPS org data
 cps_org <- load_org(2020:2024, "year", "age", "statefips", "wageotc", "union", "orgwgt", "cow1", "occ18", "ind17", "wbhao", "emp",) %>%
   # Age and labor force restrictions.
-  filter(statefips == 11, emp == 1)
+  filter(statefips == 11, cow1 <= 5, age >=16)
 
 #define tipped workers
 tipped_workers <- cps_org|>
@@ -36,10 +36,21 @@ tipped_cps$add_worksheet(sheet = "total_workers") $
   add_data(x = total_tipped)
 
 # Calculate median wages
+
+# calculate median wage over time: load CPI data from realtalk
+cpi_data <- realtalk::c_cpi_u_annual
+
+# set base year to 2024
+cpi2024 <- cpi_data$c_cpi_u[cpi_data$year==2024]
+
 tipped_wage <- tipped_workers |>
+  # Merge annual CPI data to data frame by year
+  left_join(cpi_data, by='year') |>
+  # inflation adjust wages
+  mutate(realwage = wageotc * (cpi2024/c_cpi_u)) |>
   summarise(
       median_wage = averaged_median(
-        x = wageotc, 
+        x = realwage, 
         w = orgwgt/60,  
         quantiles_n = 9L, 
         quantiles_w = c(1:4, 5, 4:1)),
