@@ -32,7 +32,7 @@ dl_acs2023_5yr <- download_extract(extract = acs2023_5yr,
 
 # CLean ACS data for employed DMV workers
 
-acs2023_5yr_final <- read_ipums_micro(dl_acs2023_5yr) |>
+acs2023_5yr_final <- read_ipums_micro(ddi = 'data/usa_00025.xml') |>
   filter(PWSTATE2 == 11, EMPSTAT == 1, CLASSWKR == 2) |>
   janitor::clean_names() |>
   mutate(
